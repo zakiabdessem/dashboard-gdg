@@ -16,7 +16,7 @@ export interface IUser {
   checkInDates?: string[];
   checkOutDates?: string[];
   hasTeam: boolean;
-  teamName: boolean;
+  teamName: string;
 }
 
 enum UserRole {

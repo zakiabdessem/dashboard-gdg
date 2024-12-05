@@ -191,6 +191,7 @@ function ParticipantsTable({
           <TableHead className="whitespace-nowrap text-center">
             Last Check-In
           </TableHead>
+          <TableHead className="whitespace-nowrap text-center">Team</TableHead>
           <TableHead className="flex items-start justify-start">
             <Select
               onValueChange={(value) => {
@@ -227,6 +228,9 @@ function ParticipantsTable({
               <TableCell>{participant.contactNumber}</TableCell>
               <TableCell className="text-center">
                 {_.upperCase(participant.tShirtSize)}
+              </TableCell>
+              <TableCell className="text-center">
+                {_.upperCase(participant.teamName)}
               </TableCell>
               <TableCell className="whitespace-nowrap text-center">
                 {lastCheckIn}

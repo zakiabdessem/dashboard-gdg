@@ -11,6 +11,7 @@ export const GET_PARTICIPANTS_BY_STATUS_QUERY = gql`
       tShirtSize
       checkInDates
       status
+      teamName
     }
   }
 `;
@@ -26,7 +27,7 @@ export const GET_PARTICIPANTS_BY_QUERY = gql`
       tShirtSize
       checkInDates
       status
+      teamName
     }
   }
 `;
-
