@@ -229,11 +229,9 @@ function ParticipantsTable({
               <TableCell className="text-center">
                 {_.upperCase(participant.tShirtSize)}
               </TableCell>
-              <TableCell className="text-center">
-                {_.upperCase(participant.teamName)}
-              </TableCell>
+              <TableCell className="text-center">{lastCheckIn}</TableCell>
               <TableCell className="whitespace-nowrap text-center">
-                {lastCheckIn}
+                {participant.teamName}
               </TableCell>
               <TableCell className="ml-2 flex items-start justify-start text-start">
                 <span
