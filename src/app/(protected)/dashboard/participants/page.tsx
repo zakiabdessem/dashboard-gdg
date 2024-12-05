@@ -107,6 +107,8 @@ const formSchema = z.object({
   github: z.string().optional(),
   linkedin: z.string().optional(),
   status: z.string().optional(),
+  portfolio: z.string().optional(),
+  teamName: z.string().optional(),
 });
 
 function ParticipantsTable({
@@ -138,10 +140,12 @@ function ParticipantsTable({
       name: "",
       contactNumber: "",
       tShirtSize: "",
+      teamName: "",
       discordUsername: "",
       github: "",
       linkedin: "",
       status: "",
+      portfolio: "",
     },
   });
 
@@ -303,6 +307,42 @@ function ParticipantsTable({
                               </FormControl>
                               <FormDescription>
                                 This is the participant full name.
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="teamName"
+                          defaultValue={participant.name}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>team Name</FormLabel>
+                              <FormControl>
+                                <Input placeholder="" type="text" {...field} />
+                              </FormControl>
+                              <FormDescription>
+                                This is the participant team name.
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="portfolio"
+                          defaultValue={participant.name}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Portfolio</FormLabel>
+                              <FormControl>
+                                <Input disabled placeholder="" type="text" {...field} />
+                              </FormControl>
+                              <FormDescription>
+                                This is the participant portfolio.
                               </FormDescription>
                               <FormMessage />
                             </FormItem>

@@ -12,6 +12,8 @@ export const GET_PARTICIPANTS_BY_STATUS_QUERY = gql`
       checkInDates
       status
       teamName
+      linkedin
+      portfolio
     }
   }
 `;
@@ -28,6 +30,8 @@ export const GET_PARTICIPANTS_BY_QUERY = gql`
       checkInDates
       status
       teamName
+      linkedin
+      portfolio
     }
   }
 `;
