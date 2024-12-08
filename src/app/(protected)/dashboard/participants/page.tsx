@@ -34,7 +34,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+import QRCode from "react-qr-code";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -277,6 +277,26 @@ function ParticipantsTable({
                         onSubmit={form.handleSubmit(onSubmit)}
                         className="grid w-full gap-4 py-4"
                       >
+                        <div
+                          style={{
+                            height: "auto",
+                            margin: "0 auto",
+                            maxWidth: 180,
+                            width: "100%",
+                          }}
+                        >
+                          <QRCode
+                            size={256}
+                            style={{
+                              height: "auto",
+                              maxWidth: "100%",
+                              width: "100%",
+                            }}
+                            value={participant._id}
+                            viewBox={`0 0 256 256`}
+                          />
+                        </div>
+
                         <FormField
                           control={form.control}
                           name="email"
@@ -339,7 +359,12 @@ function ParticipantsTable({
                             <FormItem>
                               <FormLabel>Portfolio</FormLabel>
                               <FormControl>
-                                <Input disabled placeholder="" type="text" {...field} />
+                                <Input
+                                  disabled
+                                  placeholder=""
+                                  type="text"
+                                  {...field}
+                                />
                               </FormControl>
                               <FormDescription>
                                 This is the participant portfolio.
