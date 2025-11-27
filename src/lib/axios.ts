@@ -6,7 +6,6 @@ export const instance = axios.create({
   headers: {
     "X-Requested-With": "XMLHttpRequest",
   },
-  withCredentials: true,
 });
 
 
