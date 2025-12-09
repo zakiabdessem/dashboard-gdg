@@ -422,7 +422,6 @@ function ParticipantsTable({
                               <FormLabel>Portfolio</FormLabel>
                               <FormControl>
                                 <Input
-                                  disabled
                                   placeholder=""
                                   type="text"
                                   {...field}
@@ -531,6 +530,28 @@ function ParticipantsTable({
                               </FormControl>
                               <FormDescription>
                                 This is the participant discord username.
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                          <FormField
+                          control={form.control}
+                          name="discordUsername"
+                          defaultValue={participant.github}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Github</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="github"
+                                  type=""
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                This is the participant github username.
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
