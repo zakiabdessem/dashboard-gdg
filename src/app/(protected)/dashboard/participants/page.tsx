@@ -1,7 +1,6 @@
-// NOTE: remove the line below before editing this file
 /* eslint-disable */
 "use client";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery } from "@apollo/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { GET_PARTICIPANTS_BY_STATUS_QUERY } from "@/graphql/participants.gql";
 import moment from "moment";
-import { Edit, Plus, RefreshCwIcon, Trash, ViewIcon } from "lucide-react";
+import { Edit, Plus, RefreshCwIcon, Trash, ViewIcon, ChevronUp, ChevronDown } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -56,7 +55,7 @@ import { useRouter } from "next/navigation";
 
 export default function Page() {
   const router = useRouter();
-  const [status, setStatus] = useState("pending");
+  const [status, setStatus] = useState("accepted");
   const { loading, error, data, refetch } = useQuery(
     GET_PARTICIPANTS_BY_STATUS_QUERY,
     {
@@ -127,6 +126,13 @@ function ParticipantsTable({
   refetch: any;
 }) {
   const [activeParticipant, setActiveParticipant] = useState<IUser>();
+  const [sortConfig, setSortConfig] = useState<{
+    key: 'teamName' | null;
+    direction: 'ascending' | 'descending';
+  }>({
+    key: null,
+    direction: 'ascending',
+  });
 
   const handleEditClick = (participant: IUser) => {
     form.reset({ ...participant });
@@ -148,6 +154,41 @@ function ParticipantsTable({
       portfolio: "",
     },
   });
+
+  // Sort participants by team name (case-insensitive)
+  const sortedParticipants = useMemo(() => {
+    if (!data?.participantsByStatus) return [];
+
+    const participants = [...data.participantsByStatus];
+    
+    if (sortConfig.key === 'teamName') {
+      participants.sort((a, b) => {
+        // Handle null/undefined team names by treating them as empty strings
+        const teamA = (a.teamName || '').toLowerCase();
+        const teamB = (b.teamName || '').toLowerCase();
+        
+        if (teamA < teamB) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (teamA > teamB) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    
+    return participants;
+  }, [data?.participantsByStatus, sortConfig]);
+
+  const requestSort = (key: 'teamName') => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    
+    setSortConfig({ key, direction });
+  };
 
   if (loading) return <p>Loading participants...</p>;
   if (error) return <p>Error loading participants!</p>;
@@ -181,6 +222,18 @@ function ParticipantsTable({
     refetch({ status: newStatus });
   };
 
+  const getSortIcon = (key: 'teamName') => {
+    if (sortConfig.key !== key) {
+      return <ChevronUp className="ml-1 h-4 w-4 opacity-30" />;
+    }
+    
+    if (sortConfig.direction === 'ascending') {
+      return <ChevronUp className="ml-1 h-4 w-4" />;
+    }
+    
+    return <ChevronDown className="ml-1 h-4 w-4" />;
+  };
+
   return (
     <Table className="w-full">
       <TableCaption>Details of all event participants</TableCaption>
@@ -195,7 +248,16 @@ function ParticipantsTable({
           <TableHead className="whitespace-nowrap text-center">
             Last Check-In
           </TableHead>
-          <TableHead className="whitespace-nowrap text-center">Team</TableHead>
+          <TableHead className="whitespace-nowrap text-center">
+            <Button
+              variant="ghost"
+              onClick={() => requestSort('teamName')}
+              className="flex items-center justify-center p-0 hover:bg-transparent"
+            >
+              Team
+              {getSortIcon('teamName')}
+            </Button>
+          </TableHead>
           <TableHead className="flex items-start justify-start">
             <Select
               onValueChange={(value) => {
@@ -216,7 +278,7 @@ function ParticipantsTable({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data.participantsByStatus?.map((participant: IUser) => {
+        {sortedParticipants?.map((participant: IUser) => {
           const checkInDates = participant.checkInDates;
           const lastCheckIn =
             checkInDates && checkInDates.length > 0
@@ -235,7 +297,7 @@ function ParticipantsTable({
               </TableCell>
               <TableCell className="text-center">{lastCheckIn}</TableCell>
               <TableCell className="whitespace-nowrap text-center">
-                {participant.teamName}
+                {participant.teamName || "—"}
               </TableCell>
               <TableCell className="ml-2 flex items-start justify-start text-start">
                 <span
