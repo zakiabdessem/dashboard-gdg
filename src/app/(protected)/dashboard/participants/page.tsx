@@ -538,7 +538,7 @@ function ParticipantsTable({
 
                           <FormField
                           control={form.control}
-                          name="discordUsername"
+                          name="github"
                           defaultValue={participant.github}
                           render={({ field }) => (
                             <FormItem>
