@@ -55,7 +55,7 @@ import { useRouter } from "next/navigation";
 
 export default function Page() {
   const router = useRouter();
-  const [status, setStatus] = useState("accepted");
+  const [status, setStatus] = useState("pending");
   const { loading, error, data, refetch } = useQuery(
     GET_PARTICIPANTS_BY_STATUS_QUERY,
     {
@@ -265,7 +265,7 @@ function ParticipantsTable({
               }}
             >
               <SelectTrigger className="w-[120px] border-none shadow-none">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={status || "Status"} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="accepted">Accepted</SelectItem>
