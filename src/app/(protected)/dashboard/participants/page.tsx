@@ -56,7 +56,7 @@ import { useRouter } from "next/navigation";
 
 export default function Page() {
   const router = useRouter();
-  const [status, setStatus] = useState("accepted");
+  const [status, setStatus] = useState("pending");
   const { loading, error, data, refetch } = useQuery(
     GET_PARTICIPANTS_BY_STATUS_QUERY,
     {
