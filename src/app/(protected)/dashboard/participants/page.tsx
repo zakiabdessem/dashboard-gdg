@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { GET_PARTICIPANTS_BY_STATUS_QUERY } from "@/graphql/participants.gql";
 import moment from "moment";
-import { Edit, Plus, RefreshCwIcon, Trash, ViewIcon, ChevronUp, ChevronDown } from "lucide-react";
+import { Edit, Plus, RefreshCwIcon, Trash, ViewIcon, ChevronUp, ChevronDown, Star } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import QRCode from "react-qr-code";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -108,6 +109,7 @@ const formSchema = z.object({
   status: z.string().optional(),
   portfolio: z.string().optional(),
   teamName: z.string().optional(),
+  motivation: z.string().optional(),
 });
 
 function ParticipantsTable({
@@ -134,6 +136,8 @@ function ParticipantsTable({
     direction: 'ascending',
   });
 
+  const [showMotivation, setShowMotivation] = useState<string | null>(null);
+
   const handleEditClick = (participant: IUser) => {
     form.reset({ ...participant });
     setActiveParticipant(participant);
@@ -152,6 +156,7 @@ function ParticipantsTable({
       linkedin: "",
       status: "",
       portfolio: "",
+      motivation: "",
     },
   });
 
@@ -235,345 +240,412 @@ function ParticipantsTable({
   };
 
   return (
-    <Table className="w-full">
-      <TableCaption>Details of all event participants</TableCaption>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Phone</TableHead>
-          <TableHead className="whitespace-nowrap text-center">
-            T-Shirt
-          </TableHead>
-          <TableHead className="whitespace-nowrap text-center">
-            Last Check-In
-          </TableHead>
-          <TableHead className="whitespace-nowrap text-center">
-            <Button
-              variant="ghost"
-              onClick={() => requestSort('teamName')}
-              className="flex items-center justify-center p-0 hover:bg-transparent"
-            >
-              Team
-              {getSortIcon('teamName')}
-            </Button>
-          </TableHead>
-          <TableHead className="flex items-start justify-start">
-            <Select
-              onValueChange={(value) => {
-                handleUpdateStatus(value);
-              }}
-            >
-              <SelectTrigger className="w-[120px] border-none shadow-none">
-                <SelectValue placeholder={status || "Status"} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="accepted">Accepted</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-              </SelectContent>
-            </Select>
-          </TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {sortedParticipants?.map((participant: IUser) => {
-          const checkInDates = participant.checkInDates;
-          const lastCheckIn =
-            checkInDates && checkInDates.length > 0
-              ? moment(checkInDates[checkInDates.length - 1]).format(
-                  "YYYY-MM-DD HH:mm",
-                )
-              : "N/A";
+    <>
+      <Table className="w-full">
+        <TableCaption>Details of all event participants</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Phone</TableHead>
+            <TableHead className="whitespace-nowrap text-center">
+              T-Shirt
+            </TableHead>
+            <TableHead className="whitespace-nowrap text-center">
+              Last Check-In
+            </TableHead>
+            <TableHead className="whitespace-nowrap text-center">
+              <Button
+                variant="ghost"
+                onClick={() => requestSort('teamName')}
+                className="flex items-center justify-center p-0 hover:bg-transparent"
+              >
+                Team
+                {getSortIcon('teamName')}
+              </Button>
+            </TableHead>
+            <TableHead className="whitespace-nowrap">Motivation</TableHead>
+            <TableHead className="flex items-start justify-start">
+              <Select
+                onValueChange={(value) => {
+                  handleUpdateStatus(value);
+                }}
+              >
+                <SelectTrigger className="w-[120px] border-none shadow-none">
+                  <SelectValue placeholder={status || "Status"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="accepted">Accepted</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+            </TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {sortedParticipants?.map((participant: IUser) => {
+            const checkInDates = participant.checkInDates;
+            const lastCheckIn =
+              checkInDates && checkInDates.length > 0
+                ? moment(checkInDates[checkInDates.length - 1]).format(
+                    "YYYY-MM-DD HH:mm",
+                  )
+                : "N/A";
 
-          return (
-            <TableRow key={participant.email}>
-              <TableCell>{participant.name}</TableCell>
-              <TableCell>{participant.email}</TableCell>
-              <TableCell>{participant.contactNumber}</TableCell>
-              <TableCell className="text-center">
-                {_.upperCase(participant.tShirtSize)}
-              </TableCell>
-              <TableCell className="text-center">{lastCheckIn}</TableCell>
-              <TableCell className="whitespace-nowrap text-center">
-                {participant.teamName || "—"}
-              </TableCell>
-              <TableCell className="ml-2 flex items-start justify-start text-start">
-                <span
-                  className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold leading-5 ${
-                    participant.status === "accepted"
-                      ? "bg-green-100 text-green-800"
-                      : participant.status === "rejected"
-                        ? "bg-red-100 text-red-800"
-                        : "bg-yellow-100 text-yellow-800" // Assuming default status is "pending"
-                  }`}
-                >
-                  {participant.status
-                    ? participant.status.charAt(0).toUpperCase() +
-                      participant.status.slice(1)
-                    : "Unknown"}
-                </span>
-              </TableCell>
-              <TableCell className="space-x-2 whitespace-nowrap">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      onClick={() => handleEditClick(participant)}
-                      variant="outline"
-                      className="p-1"
-                    >
-                      <Edit width={20} height={20} />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="w-full">
-                    <DialogHeader>
-                      <DialogTitle>Edit participant</DialogTitle>
-                      <DialogDescription>
-                        Make changes to the participant here. Click save when
-                        you're done.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <Form {...form}>
-                      <form
-                        onSubmit={form.handleSubmit(onSubmit)}
-                        className="grid w-full gap-4 py-4"
-                      >
-                        <div
-                          style={{
-                            height: "auto",
-                            margin: "0 auto",
-                            maxWidth: 180,
-                            width: "100%",
-                          }}
+            return (
+              <TableRow key={participant.email}>
+                <TableCell>{participant.name}</TableCell>
+                <TableCell>{participant.email}</TableCell>
+                <TableCell>{participant.contactNumber}</TableCell>
+                <TableCell className="text-center">
+                  {_.upperCase(participant.tShirtSize)}
+                </TableCell>
+                <TableCell className="text-center">{lastCheckIn}</TableCell>
+                <TableCell className="whitespace-nowrap text-center">
+                  {participant.teamName || "—"}
+                </TableCell>
+                <TableCell className="max-w-xs">
+                  {participant.motivation ? (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="flex items-center gap-1 text-left hover:bg-transparent"
+                          onClick={() => setShowMotivation(participant._id)}
                         >
-                          <QRCode
-                            size={256}
+                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                          <span className="truncate max-w-[120px]">
+                            View Motivation
+                          </span>
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                          <DialogTitle>Motivation from {participant.name}</DialogTitle>
+                          <DialogDescription>
+                            Why this participant wants to join the event
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                          <p className="text-gray-700 whitespace-pre-wrap">
+                            {participant.motivation}
+                          </p>
+                        </div>
+                        <DialogFooter>
+                          <Button
+                            variant="outline"
+                            onClick={() => setShowMotivation(null)}
+                          >
+                            Close
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  ) : (
+                    <span className="text-gray-400 text-sm">No motivation provided</span>
+                  )}
+                </TableCell>
+                <TableCell className="ml-2 flex items-start justify-start text-start">
+                  <span
+                    className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold leading-5 ${
+                      participant.status === "accepted"
+                        ? "bg-green-100 text-green-800"
+                        : participant.status === "rejected"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-yellow-100 text-yellow-800"
+                    }`}
+                  >
+                    {participant.status
+                      ? participant.status.charAt(0).toUpperCase() +
+                        participant.status.slice(1)
+                      : "Unknown"}
+                  </span>
+                </TableCell>
+                <TableCell className="space-x-2 whitespace-nowrap">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        onClick={() => handleEditClick(participant)}
+                        variant="outline"
+                        className="p-1"
+                      >
+                        <Edit width={20} height={20} />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="w-full max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Edit participant</DialogTitle>
+                        <DialogDescription>
+                          Make changes to the participant here. Click save when
+                          you're done.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <Form {...form}>
+                        <form
+                          onSubmit={form.handleSubmit(onSubmit)}
+                          className="grid w-full gap-4 py-4"
+                        >
+                          <div
                             style={{
                               height: "auto",
-                              maxWidth: "100%",
+                              margin: "0 auto",
+                              maxWidth: 180,
                               width: "100%",
                             }}
-                            value={participant._id}
-                            viewBox={`0 0 256 256`}
-                          />
-                        </div>
-
-                        <FormField
-                          control={form.control}
-                          name="email"
-                          defaultValue={participant.email}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Email</FormLabel>
-                              <FormControl>
-                                <Input placeholder="" type="email" {...field} />
-                              </FormControl>
-                              <FormDescription>
-                                This is the participant email.
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="name"
-                          defaultValue={participant.name}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Full Name</FormLabel>
-                              <FormControl>
-                                <Input placeholder="" type="text" {...field} />
-                              </FormControl>
-                              <FormDescription>
-                                This is the participant full name.
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="teamName"
-                          defaultValue={participant.name}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>team Name</FormLabel>
-                              <FormControl>
-                                <Input placeholder="" type="text" {...field} />
-                              </FormControl>
-                              <FormDescription>
-                                This is the participant team name.
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="portfolio"
-                          defaultValue={participant.name}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Portfolio</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder=""
-                                  type="text"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                This is the participant portfolio.
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="contactNumber"
-                          defaultValue={participant.contactNumber}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Phone number</FormLabel>
-                              <FormControl>
-                                <Input placeholder="" type="text" {...field} />
-                              </FormControl>
-                              <FormDescription>
-                                This is the participant phone number.
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="tShirtSize"
-                          defaultValue={participant.tShirtSize}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>T-shirt</FormLabel>
-                              <Select
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select a Size" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="S">S</SelectItem>
-                                  <SelectItem value="M">M</SelectItem>
-                                  <SelectItem value="L">L</SelectItem>
-                                  <SelectItem value="XL">XL</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="status"
-                          defaultValue={participant.status}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Participant Status</FormLabel>
-                              <Select
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select a status" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="pending">
-                                    Pending
-                                  </SelectItem>
-                                  <SelectItem value="accepted">
-                                    Accepted
-                                  </SelectItem>
-                                  <SelectItem value="rejected">
-                                    Rejected
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="discordUsername"
-                          defaultValue={participant.discordUsername}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Discord</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="Joe1234"
-                                  type=""
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                This is the participant discord username.
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                          >
+                            <QRCode
+                              size={256}
+                              style={{
+                                height: "auto",
+                                maxWidth: "100%",
+                                width: "100%",
+                              }}
+                              value={participant._id}
+                              viewBox={`0 0 256 256`}
+                            />
+                          </div>
 
                           <FormField
-                          control={form.control}
-                          name="github"
-                          defaultValue={participant.github}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Github</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="github"
-                                  type=""
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                This is the participant github username.
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                            control={form.control}
+                            name="email"
+                            defaultValue={participant.email}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Email</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="" type="email" {...field} />
+                                </FormControl>
+                                <FormDescription>
+                                  This is the participant email.
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-                        <DialogFooter>
-                          <Button type="submit">Submit</Button>
-                        </DialogFooter>
-                      </form>
-                    </Form>
-                  </DialogContent>
-                </Dialog>
+                          <FormField
+                            control={form.control}
+                            name="name"
+                            defaultValue={participant.name}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Full Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="" type="text" {...field} />
+                                </FormControl>
+                                <FormDescription>
+                                  This is the participant full name.
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-                <Button variant="outline" className="p-1">
-                  <Trash width={20} height={20} />
-                </Button>
-              </TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
+                          <FormField
+                            control={form.control}
+                            name="teamName"
+                            defaultValue={participant.teamName}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Team Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="" type="text" {...field} />
+                                </FormControl>
+                                <FormDescription>
+                                  This is the participant team name.
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="portfolio"
+                            defaultValue={participant.portfolio}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Portfolio</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder=""
+                                    type="text"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormDescription>
+                                  This is the participant portfolio.
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="contactNumber"
+                            defaultValue={participant.contactNumber}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Phone number</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="" type="text" {...field} />
+                                </FormControl>
+                                <FormDescription>
+                                  This is the participant phone number.
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="tShirtSize"
+                            defaultValue={participant.tShirtSize}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>T-shirt</FormLabel>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select a Size" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="S">S</SelectItem>
+                                    <SelectItem value="M">M</SelectItem>
+                                    <SelectItem value="L">L</SelectItem>
+                                    <SelectItem value="XL">XL</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="motivation"
+                            defaultValue={participant.motivation}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Motivation</FormLabel>
+                                <FormControl>
+                                  <Textarea
+                                    placeholder="Why do you want to participate in this event?"
+                                    className="min-h-[100px]"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormDescription>
+                                  This is the participant's motivation for joining.
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="status"
+                            defaultValue={participant.status}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Participant Status</FormLabel>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select a status" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="pending">
+                                      Pending
+                                    </SelectItem>
+                                    <SelectItem value="accepted">
+                                      Accepted
+                                    </SelectItem>
+                                    <SelectItem value="rejected">
+                                      Rejected
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="discordUsername"
+                            defaultValue={participant.discordUsername}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Discord</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Joe1234"
+                                    type=""
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormDescription>
+                                  This is the participant discord username.
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="github"
+                            defaultValue={participant.github}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Github</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="github"
+                                    type=""
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormDescription>
+                                  This is the participant github username.
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <DialogFooter>
+                            <Button type="submit">Submit</Button>
+                          </DialogFooter>
+                        </form>
+                      </Form>
+                    </DialogContent>
+                  </Dialog>
+
+                  <Button variant="outline" className="p-1">
+                    <Trash width={20} height={20} />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </>
   );
 }

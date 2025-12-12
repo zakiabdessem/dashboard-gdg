@@ -11,6 +11,7 @@ export interface IUser {
   github?: string;
   linkedin?: string;
   portfolio?: string;
+  motivation?: string;
   points: number;
   status?: "pending" | "accepted" | "rejected";
   checkInDates?: string[];
