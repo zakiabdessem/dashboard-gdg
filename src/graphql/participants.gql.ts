@@ -14,6 +14,7 @@ export const GET_PARTICIPANTS_BY_STATUS_QUERY = gql`
       teamName
       linkedin
       portfolio
+      motivation
       github
     }
   }
@@ -34,6 +35,7 @@ export const GET_PARTICIPANTS_BY_QUERY = gql`
       linkedin
       portfolio
       github
+      motivation
     }
   }
 `;
